@@ -14,26 +14,103 @@ output:
 
 ------------------------------------------------------------------------
 
+```{r, include=FALSE}
+library(tidyverse)
+library(janitor)
+library(knitr)
+```
+
 # Introduction
 
-Survey data analysis, report & presentation:
+This report analyzes the relationship between meal habits and perceived study productivity among university students. The focus is on three research questions related to breakfast frequency, the number of main meals per day, and self-reported study productivity.
 
-Exploratory Data Analysis: Choose appropriate methods to explore the categorical and quantitative features in your data set (one visualization per research question). Briefly explain the methods and comment on your findings.
-Descriptive Inference: Compute suitable summary statistics and display the results in a table.
-Analytic Inference: Select an appropriate test statistic to test your hypothesis. Summarize the results and explain how your findings are connected to your research question.
-Guidelines for the presentation:
+For the analysis, only the variables relevant to Group 39 were selected from the full survey dataset.
 
-The survey results are given below. Use these to extract the data to analyze the research questions posed by your own group.
-The participation of all group members is mandatory and everyone should present.
-introduce the survey questions and present the results using appropriate visualizations
-stay within the time limit of 5 minutes, cover all questions, and use suitable visuals
-use any presentation tool such as PowerPoint or LaTeX Beamer, and submit the slides together with your final report
-The presentation will not be graded separately, but is a condition for a positive grade. If you are between grades, a good presentation will lead to a better grade.
-Guidelines for the report:
+# Data Preparation
 
-use RMarkdown
-include a table of contents
-briefly summarize the functions used
-display all important code snippets in the .pdf
-document your findings
-Submit both the .rmd and .pdf files for your report and the slides of your group presentation (.pdf) via TUWEL.
+```{r}
+# Load the survey data and keep the original column names
+data <- read.csv("../data/Survey_results_2026.csv", check.names = FALSE)
+
+# Select only the columns relevant for our group
+group39_data <- data[, c(
+  "DQ How old are you?",
+  "DQ What is your gender?",
+  "DQ What is your academic program?",
+  "G39 How often do you eat breakfast during a typical study week?",
+  "G39 How many main meals do you usually eat per day, excluding snacks?",
+  "G39 How productive do you usually feel during your study sessions?"
+)]
+
+# Rename the columns to shorter names
+names(group39_data) <- c(
+  "age",
+  "gender",
+  "academic_program",
+  "breakfast_frequency",
+  "main_meals_per_day",
+  "study_productivity"
+)
+
+# Show the first rows
+head(group39_data)
+```
+
+The selected dataset contains demographic variables as well as the three variables needed to test the research hypotheses.
+
+# Hypothesis 1: Breakfast Frequency and Study Productivity
+
+Research Question: Is the frequency of eating breakfast associated with students' perceived study productivity?
+
+Hypothesis: Students who eat breakfast more often report higher perceived study productivity.
+
+```{r}
+# Make sure study productivity is numeric
+group39_data$study_productivity <- as.numeric(group39_data$study_productivity)
+
+# Define the correct order for breakfast frequency
+group39_data$breakfast_frequency <- factor(
+  group39_data$breakfast_frequency,
+  levels = c(
+    "Never",
+    "1-2 days per week",
+    "3-4 days per week",
+    "5-6 days per week",
+    "Every day"
+  ),
+  ordered = TRUE
+)
+
+# Calculate average study productivity for each breakfast category
+h1_summary <- aggregate(
+  study_productivity ~ breakfast_frequency,
+  data = group39_data,
+  FUN = mean
+)
+
+# Show the summary table
+h1_summary
+```
+
+```{r}
+# Create a barplot for Hypothesis 1
+barplot(
+  h1_summary$study_productivity,
+  names.arg = h1_summary$breakfast_frequency,
+  xlab = "Breakfast frequency",
+  ylab = "Average study productivity",
+  main = "Average study productivity by breakfast frequency",
+  las = 2
+)
+```
+
+
+# Hypothesis 2: Main Meals per Day and Study Productivity
+
+
+# Hypothesis 3: Breakfast Frequency and Main Meals per Day
+
+
+# Summary of Findings
+
+# Conclusion

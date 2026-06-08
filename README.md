@@ -1,23 +1,101 @@
 # DASM_Assignment2_group39
 
-Survey data analysis, report & presentation:
+## Assignment Overview
 
-Exploratory Data Analysis: Choose appropriate methods to explore the categorical and quantitative features in your data set (one visualization per research question). Briefly explain the methods and comment on your findings.
-Descriptive Inference: Compute suitable summary statistics and display the results in a table.
-Analytic Inference: Select an appropriate test statistic to test your hypothesis. Summarize the results and explain how your findings are connected to your research question.
-Guidelines for the presentation:
+This project analyzes the survey data for Group 39 and addresses the assigned research questions through exploratory, descriptive, and inferential statistical methods.
 
-The survey results are given below. Use these to extract the data to analyze the research questions posed by your own group.
-The participation of all group members is mandatory and everyone should present.
-introduce the survey questions and present the results using appropriate visualizations
-stay within the time limit of 5 minutes, cover all questions, and use suitable visuals
-use any presentation tool such as PowerPoint or LaTeX Beamer, and submit the slides together with your final report
-The presentation will not be graded separately, but is a condition for a positive grade. If you are between grades, a good presentation will lead to a better grade.
-Guidelines for the report:
+### Deliverables
 
-use RMarkdown
-include a table of contents
-briefly summarize the functions used
-display all important code snippets in the .pdf
-document your findings
-Submit both the .rmd and .pdf files for your report and the slides of your group presentation (.pdf) via TUWEL.
+#### Exploratory Data Analysis (EDA)
+
+-   Explore the relevant categorical and quantitative variables.
+-   Create at least one suitable visualization for each research question.
+-   Briefly explain the chosen methods and summarize the main findings.
+
+#### Descriptive Inference
+
+-   Compute appropriate summary statistics.
+-   Present the results in well-formatted tables.
+
+#### Analytic Inference
+
+-   Select and justify suitable statistical tests for each hypothesis.
+-   Report and interpret the results.
+-   Relate the findings back to the corresponding research questions.
+
+### Presentation Requirements
+
+-   Present the survey questions and key findings.
+-   Use appropriate visualizations.
+-   Stay within the 5-minute time limit.
+-   Participation of all group members is mandatory.
+-   Submit presentation slides together with the final report.
+-   Any presentation software may be used (e.g., PowerPoint, LaTeX Beamer).
+
+### Report Requirements
+
+-   Use RMarkdown.
+-   Include a table of contents.
+-   Briefly document important functions and methods used.
+-   Include all relevant code snippets in the final PDF.
+-   Clearly document and discuss the findings.
+
+### Submission
+
+Submit the following files via TUWEL: - RMarkdown file (.Rmd) - Report PDF (.pdf) - Presentation slides (.pdf)
+
+------------------------------------------------------------------------
+
+## RStudio + GitHub Setup
+
+To work on this repository in RStudio, clone it as an RStudio project.
+
+### 1. Clone the repository in RStudio
+
+Open RStudio and go to:
+
+File → New Project → Version Control → Git
+
+Paste the HTTPS link of this GitHub repository:
+
+<https://github.com/PhilippS01/DASM_Assignment2_group39.git>
+
+Choose a local folder where the project should be saved, for example:
+
+Desktop/DASM/
+
+Then click Create Project.
+
+RStudio will download the repository and create/open the local project folder.
+
+### 2. Open the project later
+
+After cloning the repository once, do not clone it again.
+
+To open the project later, open the .Rproj file inside the local repository folder:
+
+DASM_Assignment2_group39.Rproj
+
+For example:
+
+Desktop/DASM/DASM_Assignment2_group39/DASM_Assignment2_group39.Rproj
+
+Alternatively, use:
+
+File → Open Project
+
+and select the .Rproj file.
+
+### 3. Usual workflow
+
+Before editing, pull the newest version from GitHub.
+
+Then edit the files in RStudio, save them, commit your changes, and push them back to GitHub:
+
+Pull → edit → save → commit → push
+
+Only saving a file changes it locally. The changes appear on GitHub only after committing and pushing.
+
+### 4. Important
+
+Always work inside the cloned repository folder and open the project via the .Rproj file. Do not work in copied folders outside the repository.
