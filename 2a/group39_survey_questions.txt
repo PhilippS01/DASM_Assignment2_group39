@@ -1,0 +1,38 @@
+Group 39
+Topic: Meal Habits and Study Productivity Among University Students
+
+Research Questions and Hypotheses
+
+RQ1: Is the frequency of eating breakfast associated with students' perceived study productivity?
+H1: Students who eat breakfast more often report higher perceived study productivity.
+
+RQ2: Is the number of main meals per day associated with students' perceived study productivity?
+H2: Students who eat more main meals per day report higher perceived study productivity.
+
+RQ3: Is the frequency of eating breakfast associated with the number of main meals students usually eat per day?
+H3: Students who eat breakfast more often also report eating more main meals per day.
+
+Survey Questions
+
+Demographic Questions
+
+1. What is your age?
+Answer format: Numeric value in years.
+
+2. What is your gender?
+Answer options: Female / Male / Non-binary / Prefer not to say / Other
+
+3. What is your academic program?
+Answer format: Open text, e.g. Data Science, Computer Science, Business Informatics, etc.
+Note: For the analysis, answers may be grouped into broader academic program categories if necessary.
+
+Additional Survey Questions
+
+4. How often do you eat breakfast during a typical study week?
+Answer options: Never / 1-2 days per week / 3-4 days per week / 5-6 days per week / Every day
+
+5. How many main meals do you usually eat per day, excluding snacks?
+Answer format: Numeric value, e.g. 1, 2, 3, 4, etc.
+
+6. How productive do you usually feel during your study sessions?
+Answer format: 1-5 Likert scale, where 1 = not productive at all and 5 = very productive
