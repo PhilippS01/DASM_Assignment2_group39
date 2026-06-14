@@ -110,6 +110,8 @@ The dataset contains 209 observations and 7 variables after data preparation. No
 
 Choose appropriate methods to explore the categorical and quantitative features in your data set (one visualization per research question). Briefly explain the methods and comment on your findings.
 
+eg.,
+
 ```{r}
 # Calculate average study productivity for each breakfast category
 h1_summary <- aggregate(
@@ -144,19 +146,37 @@ Select an appropriate test statistic to test your hypothesis. Summarize the resu
 
 # Hypothesis 2: Main Meals per Day and Study Productivity
 
+**Research Question:** Is the number of main meals per day associated with students' perceived study productivity?
+**Hypothesis:** Students who eat more main meals per day report higher perceived study productivity.
+
 ## Exploratory Data Analysis:
+
+Choose appropriate methods to explore the categorical and quantitative features in your data set (one visualization per research question). Briefly explain the methods and comment on your findings.
 
 ## Descriptive Inference:
 
+Compute suitable summary statistics and display the results in a table.
+
 ## Analytic Inference:
+
+Select an appropriate test statistic to test your hypothesis. Summarize the results and explain how your findings are connected to your research question.
 
 # Hypothesis 3: Breakfast Frequency and Main Meals per Day
 
+**Research Question:** Is the frequency of eating breakfast associated with the number of main meals students usually eat per day?
+**Hypothesis:** Students who eat breakfast more often also report eating more main meals per day.
+
 ## Exploratory Data Analysis:
+
+Choose appropriate methods to explore the categorical and quantitative features in your data set (one visualization per research question). Briefly explain the methods and comment on your findings.
 
 ## Descriptive Inference:
 
+Compute suitable summary statistics and display the results in a table.
+
 ## Analytic Inference:
+
+Select an appropriate test statistic to test your hypothesis. Summarize the results and explain how your findings are connected to your research question.
 
 # Explorative Analsis
 
