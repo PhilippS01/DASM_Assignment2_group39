@@ -14,15 +14,32 @@ output:
 
 ------------------------------------------------------------------------
 
-```{r, include=FALSE}
+```{r setup, include=FALSE}
 library(tidyverse)
 library(janitor)
 library(knitr)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
 ```
 
 # Introduction
 
 This report analyzes the relationship between meal habits and perceived study productivity among university students. The focus is on three research questions related to breakfast frequency, the number of main meals per day, and self-reported study productivity.
+
+The analysis focuses on the following three research questions and hypotheses:
+
+-   **RQ1:** Is the frequency of eating breakfast associated with students' perceived study productivity?\
+    **H1:** Students who eat breakfast more often report higher perceived study productivity.
+
+-   **RQ2:** Is the number of main meals per day associated with students' perceived study productivity?\
+    **H2:** Students who eat more main meals per day report higher perceived study productivity.
+
+-   **RQ3:** Is the frequency of eating breakfast associated with the number of main meals students usually eat per day?\
+    **H3:** Students who eat breakfast more often also report eating more main meals per day.
 
 For the analysis, only the variables relevant to Group 39 were selected from the full survey dataset.
 
@@ -52,35 +69,48 @@ names(group39_data) <- c(
   "study_productivity"
 )
 
+# Convert breakfast frequency to an ordered factor
+group39_data <- group39_data %>%
+  mutate(
+    main_meals_per_day = as.numeric(main_meals_per_day),
+    study_productivity = as.numeric(study_productivity),
+    breakfast_frequency = factor(
+      breakfast_frequency,
+      levels = c(
+        "Never",
+        "1-2 days per week",
+        "3-4 days per week",
+        "5-6 days per week",
+        "Every day"
+      ),
+      ordered = TRUE
+    ),
+    breakfast_score = as.numeric(breakfast_frequency) - 1
+  )
+
 # Show the first rows
 head(group39_data)
 ```
 
-The selected dataset contains demographic variables as well as the three variables needed to test the research hypotheses.
+The selected dataset contains demographic variables as well as the three variables needed to test the research hypotheses. The variables were converted into appropriate formats for the analysis. The number of main meals per day and study productivity were transformed into numeric variables. Breakfast frequency was converted into an ordered factor because the response categories follow a natural order from "Never" to "Every day". Additionally, a numeric breakfast score was created to use breakfast frequency in the statistical correlation tests.
+
+```{r}
+str(group39_data)
+colSums(is.na(group39_data))
+```
+
+The dataset contains 209 observations and 7 variables after data preparation. No missing values were found in any of the selected variables, so no observations had to be removed before the analysis.
 
 # Hypothesis 1: Breakfast Frequency and Study Productivity
 
-Research Question: Is the frequency of eating breakfast associated with students' perceived study productivity?
+**Research Question:** Is the frequency of eating breakfast associated with students' perceived study productivity?
+**Hypothesis:** Students who eat breakfast more often report higher perceived study productivity.
 
-Hypothesis: Students who eat breakfast more often report higher perceived study productivity.
+## Exploratory Data Analysis:
+
+Choose appropriate methods to explore the categorical and quantitative features in your data set (one visualization per research question). Briefly explain the methods and comment on your findings.
 
 ```{r}
-# Make sure study productivity is numeric
-group39_data$study_productivity <- as.numeric(group39_data$study_productivity)
-
-# Define the correct order for breakfast frequency
-group39_data$breakfast_frequency <- factor(
-  group39_data$breakfast_frequency,
-  levels = c(
-    "Never",
-    "1-2 days per week",
-    "3-4 days per week",
-    "5-6 days per week",
-    "Every day"
-  ),
-  ordered = TRUE
-)
-
 # Calculate average study productivity for each breakfast category
 h1_summary <- aggregate(
   study_productivity ~ breakfast_frequency,
@@ -104,12 +134,33 @@ barplot(
 )
 ```
 
+## Descriptive Inference:
+
+Compute suitable summary statistics and display the results in a table.
+
+## Analytic Inference:
+
+Select an appropriate test statistic to test your hypothesis. Summarize the results and explain how your findings are connected to your research question.
 
 # Hypothesis 2: Main Meals per Day and Study Productivity
 
+## Exploratory Data Analysis:
+
+## Descriptive Inference:
+
+## Analytic Inference:
 
 # Hypothesis 3: Breakfast Frequency and Main Meals per Day
 
+## Exploratory Data Analysis:
+
+## Descriptive Inference:
+
+## Analytic Inference:
+
+# Explorative Analsis
+
+Mediator Hyotheses
 
 # Summary of Findings
 
