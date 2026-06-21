@@ -9,16 +9,27 @@ date: "2026"
 output:
   pdf_document:
     toc: true
-    number_sections: true
+    number_sections: false
 ---
 
 ------------------------------------------------------------------------
 
 ```{r setup, include=FALSE}
+# Install missing packages, then load them
+packages <- c("tidyverse", "janitor", "knitr", "ggdag")
+
+missing_packages <- packages[!packages %in% installed.packages()[, "Package"]]
+
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages)
+}
+
 library(tidyverse)
 library(janitor)
 library(knitr)
+library(ggdag)
 
+# Set default knit options for all code chunks
 knitr::opts_chunk$set(
   echo = TRUE,
   warning = FALSE,
@@ -26,22 +37,24 @@ knitr::opts_chunk$set(
 )
 ```
 
+\newpage
+
 # Introduction
 
 This report analyzes the relationship between meal habits and perceived study productivity among university students. The focus is on three research questions related to breakfast frequency, the number of main meals per day, and self-reported study productivity.
 
 The analysis focuses on the following three research questions and hypotheses:
 
--   **RQ1:** Is the frequency of eating breakfast associated with students' perceived study productivity?\
+1.   **RQ1:** Is the frequency of eating breakfast associated with students' perceived study productivity?\
     **H1:** Students who eat breakfast more often report higher perceived study productivity.
 
--   **RQ2:** Is the number of main meals per day associated with students' perceived study productivity?\
+2.   **RQ2:** Is the number of main meals per day associated with students' perceived study productivity?\
     **H2:** Students who eat more main meals per day report higher perceived study productivity.
 
--   **RQ3:** Is the frequency of eating breakfast associated with the number of main meals students usually eat per day?\
+3.   **RQ3:** Is the frequency of eating breakfast associated with the number of main meals students usually eat per day?\
     **H3:** Students who eat breakfast more often also report eating more main meals per day.
 
-For the analysis, only the variables relevant to Group 39 were selected from the full survey dataset.
+For the analysis, only the variables relevant to these research questions were selected from the full survey dataset.
 
 # Data Preparation
 
@@ -104,62 +117,91 @@ The dataset contains 209 observations and 7 variables after data preparation. No
 # Hypothesis 1: Breakfast Frequency and Study Productivity
 
 **Research Question:** Is the frequency of eating breakfast associated with students' perceived study productivity?
+
 **Hypothesis:** Students who eat breakfast more often report higher perceived study productivity.
 
-## Exploratory Data Analysis:
+to be added...
 
-Choose appropriate methods to explore the categorical and quantitative features in your data set (one visualization per research question). Briefly explain the methods and comment on your findings.
-
-eg.,
-
-```{r}
-# Calculate average study productivity for each breakfast category
-h1_summary <- aggregate(
-  study_productivity ~ breakfast_frequency,
-  data = group39_data,
-  FUN = mean
-)
-
-# Show the summary table
-h1_summary
-```
-
-```{r}
-# Create a barplot for Hypothesis 1
-barplot(
-  h1_summary$study_productivity,
-  names.arg = h1_summary$breakfast_frequency,
-  xlab = "Breakfast frequency",
-  ylab = "Average study productivity",
-  main = "Average study productivity by breakfast frequency",
-  las = 2
-)
-```
-
-## Descriptive Inference:
-
-Compute suitable summary statistics and display the results in a table.
-
-## Analytic Inference:
-
-Select an appropriate test statistic to test your hypothesis. Summarize the results and explain how your findings are connected to your research question.
+\newpage
 
 # Hypothesis 2: Main Meals per Day and Study Productivity
 
 **Research Question:** Is the number of main meals per day associated with students' perceived study productivity?
 **Hypothesis:** Students who eat more main meals per day report higher perceived study productivity.
 
+In order to test this hypothesis we first need the evaluate our needed variables: We have main_meals_per_day, which is a discrete quantitative variable and study_productivity, which is an ordinal categorical variable measured on a 1-5 scale.
+
+
 ## Exploratory Data Analysis:
 
-Choose appropriate methods to explore the categorical and quantitative features in your data set (one visualization per research question). Briefly explain the methods and comment on your findings.
+For the data exploratation we generate boxplots to visualize the distribution of productivity scores for the different amout of daily meals.
+
+```{r}
+ggplot(group39_data, aes(x = factor(main_meals_per_day), y = study_productivity)) +
+  geom_boxplot(fill = "lightblue", color = "black") +
+  labs(
+    title = "Productivity Distribution by Meal Count",
+    x = "Number of Main Meals per Day",
+    y = "Perceived Productivity (1-5 Scale)"
+  ) +
+  theme_minimal()
+```
+
+Analyzing the boxplots, we can see a shift in the medians of the perceived productivity scores. Students with one or two meals per day, have a median productivity score of 3, while those students who eat three or four meals per day have a higher median productivity score of 4. However, the interquartile range is from 3 to 4 for all four of these four groups.
+
+In addition, we have kept the category for 7 main meals per day to accurately reflect the complete data. This is an outlier with a median score of 3 and no spread.
+
 
 ## Descriptive Inference:
 
-Compute suitable summary statistics and display the results in a table.
+In order to verify the visual observations from our boxplot we will calculate the summary statistics.
+
+```{r}
+report_table <- group39_data %>%
+  select(main_meals_per_day, study_productivity) %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "Value") %>%
+  group_by(Variable) %>%
+  summarise(
+    count = sum(!is.na(Value)),
+    mean = round(mean(Value, na.rm = TRUE), 2),
+    std = round(sd(Value, na.rm = TRUE), 2),
+    min = round(min(Value, na.rm = TRUE), 2),
+    q25 = round(quantile(Value, 0.25, na.rm = TRUE), 2),
+    median = round(median(Value, na.rm = TRUE), 2),
+    q75 = round(quantile(Value, 0.75, na.rm = TRUE), 2),
+    max = round(max(Value, na.rm = TRUE), 2)
+  )
+
+print(as.data.frame(report_table))
+```
+
+In this statistics table we see that students on average have 2.47 main meals per day, with an average  study productivity score of 3.46.
+
+What stands out is that no student in our subset reported the lowest possible productivity score of 1, and the quartiles confirm our findings from the boxplots with the middle 50% having a productivity score of 3 or 4.
 
 ## Analytic Inference:
 
-Select an appropriate test statistic to test your hypothesis. Summarize the results and explain how your findings are connected to your research question.
+To finally test our hypothesis we select the Spearman rank correlation coefficient ($r_s$) as our test statistic. The reason for that is that our dependent variable, perceived study productivity, is measured on an ordinal scale. 
+
+Since standard parametric tests, require continuous, normally distributed data and assume a linear relationship we cannot use it here. A productivity score of 2 and 3 is not necessarily the exact same as the distance between 4 and 5.
+
+The Spearman correlation avoids these assumptions by converting the raw data points into ranks before calculating the correlation.
+
+```{r}
+spearman_res <- cor.test(
+  group39_data$main_meals_per_day, 
+  group39_data$study_productivity, 
+  method = "spearman",
+  exact = FALSE
+)
+
+cat(sprintf("Spearman correlation coefficient: %.3f\n", spearman_res$estimate))
+cat(sprintf("p-value: %.4f\n\n", spearman_res$p.value))
+```
+
+The statistical test shows a very small positive correlation with a high p-value that is higher than the standard significance level of $\alpha = 0.05$. Because of this high p-value we fail to reject the null hypothesis.
+
+\newpage
 
 # Hypothesis 3: Breakfast Frequency and Main Meals per Day
 
@@ -168,19 +210,326 @@ Select an appropriate test statistic to test your hypothesis. Summarize the resu
 
 ## Exploratory Data Analysis:
 
-Choose appropriate methods to explore the categorical and quantitative features in your data set (one visualization per research question). Briefly explain the methods and comment on your findings.
+To explore the relationship between breakfast frequency and the number of main meals per day,
 
+We calculated the average number of main meals per day for each breakfast frequency category using the `aggregate()` function. This allows us to observe the central tendency of meal consumption across different breakfast habits. A barplot was created to visualize this relationship, with breakfast frequency on the x-axis and average main meals per day on the y-axis. This visualization helps identify potential trends and patterns in the data.
+
+```{r}
+# Calculate average main meals for each breakfast category
+h3_summary <- aggregate(
+  main_meals_per_day ~ breakfast_frequency,
+  data = group39_data,
+  FUN = mean
+)
+
+# Show the summary table
+h3_summary
+```
+
+
+```{r}
+# Create barplot for Hypothesis 3
+ggplot(h3_summary, aes(x = breakfast_frequency, 
+                       y = main_meals_per_day, fill = breakfast_frequency)) +
+  geom_bar(stat = "identity", width = 0.5) +
+  labs(
+    title = "H3: Main Meals per Day by Breakfast Frequency",
+    x = "Breakfast Frequency",
+    y = "Average Main Meals per Day",
+    fill = "Breakfast Frequency"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+  ) +
+  scale_fill_brewer(palette = "Blues")
+```
+
+ The exploratory analysis reveals a positive trend between breakfast frequency and the number of main meals consumed per day. Students who never eat breakfast consume an average of approximately 1.9 main meals per day, while those who eat breakfast every day consume an average of approximately 2.8 main meals per day. The barplot shows a consistent upward pattern: as breakfast frequency increases from "Never" to "Every day," the average number of main meals per day steadily increases. This initial visual evidence supports our hypothesis that students who eat breakfast more frequently also tend to consume more main meals throughout the day.
+ 
 ## Descriptive Inference:
 
-Compute suitable summary statistics and display the results in a table.
+To compute the descriptive statistics, we grouped the data by breakfast frequency and calculated the count, mean, median, standard deviation, minimum, and maximum for the number of main meals per day. This provides a comprehensive overview of the central tendency and dispersion of meal consumption across the different breakfast categories, allowing us to better understand the distribution of the data beyond just the averages.
+
+```{r h3-descriptive-inference}
+# Compute comprehensive summary statistics for main meals per day by breakfast frequency
+h3_descriptive <- group39_data %>%
+  group_by(breakfast_frequency) %>%
+  summarise(
+    Count = n(),
+    Mean = round(mean(main_meals_per_day, na.rm = TRUE), 2),
+    Median = median(main_meals_per_day, na.rm = TRUE),
+    SD = round(sd(main_meals_per_day, na.rm = TRUE), 2),
+    Min = min(main_meals_per_day, na.rm = TRUE),
+    Max = max(main_meals_per_day, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Display the table
+kable(h3_descriptive, 
+      caption = "Table 1: Summary statistics of main meals per day by breakfast frequency",
+      align = c('l', 'c', 'c', 'c', 'c', 'c', 'c'))
+```
+
+The descriptive statistics reveal a clear positive trend between breakfast frequency and the number of main meals consumed per day. Students who never eat breakfast consume the fewest main meals on average, while those who eat breakfast every day consume the most. The median number of main meals increases progressively across breakfast frequency categories, indicating a shift in typical meal consumption patterns. The standard deviations show moderate variability within each group, with students who have moderate breakfast habits displaying slightly more diverse eating patterns. Overall, these descriptive statistics support H3, as the mean number of main meals consistently increases with breakfast frequency.
 
 ## Analytic Inference:
+To test whether there is a statistically significant association between breakfast frequency and the number of main meals per day, we used **Spearman's rank correlation coefficient**. This non-parametric test is appropriate because breakfast frequency is an ordinal variable (ordered categories) and we want to assess whether there is a monotonic relationship between the two variables without assuming a normal distribution.
 
-Select an appropriate test statistic to test your hypothesis. Summarize the results and explain how your findings are connected to your research question.
+```{r h3-analytic-inference}
+# Spearman correlation test
+h3_correlation <- cor.test(
+  group39_data$breakfast_score,
+  group39_data$main_meals_per_day,
+  method = "spearman",
+  use = "complete.obs"
+)
 
-# Explorative Analsis
+# Display results 
+cat(
+  "   SPEARMAN CORRELATION TEST RESULTS - H3\n",
 
-Mediator Hyotheses
+  "Testing: Breakfast Frequency vs Main Meals per Day\n\n",
+ 
+  sprintf("Correlation coefficient (rho):  %.3f\n", h3_correlation$estimate),
+  sprintf("p-value:                        %.4f\n", h3_correlation$p.value),
+  sprintf("Sample size (n):                %d\n", length(group39_data$breakfast_score)),
+  
+  sep = ""
+)
+```
+The Spearman correlation test reveals a correlation coefficient of "$\\rho$" = 0.425 with a p-value < 0.001. This indicates a moderate positive correlation between breakfast frequency and the number of main meals per day.
+
+The positive correlation coefficient indicates that as breakfast frequency increases, the number of main meals per day also tends to increase. The p-value is less than 0.001, which is well below the conventional significance level of 0.05, indicating that this relationship is highly statistically significant. This means the observed association is very unlikely to have occurred by chance.
+
+Based on the Spearman correlation test, H3 is strongly supported. There is a statistically significant moderate positive correlation between breakfast frequency and the number of main meals per day. Students who eat breakfast more frequently tend to consume more main meals throughout the day, confirming our hypothesis that regular breakfast consumption is associated with higher overall meal frequency.
+
+# Explorative Analysis
+
+## Mediator Hypotheses: Demographic Questions as Moderators and Mediators
+
+We explore whether the demographic variables (age, gender, academic program) moderate or mediate the relationships between meal habits and study productivity. Specifically, we test whether the associations between breakfast frequency and productivity, and between main meals per day and productivity, differ across demographic groups.
+
+### Moderation by Demographics
+
+#### Gender as a Moderator
+
+We test whether the relationship between main meals per day and study productivity differs by gender using an interaction model.
+
+```{r}
+# Prepare gender as a factor (excluding "Other" and "Prefer not to say" if present)
+group39_data_gender <- group39_data %>%
+  filter(gender %in% c("Female", "Male")) %>%
+  mutate(gender = factor(gender))
+
+# Interaction model: main meals per day × gender → study productivity
+interaction_model_gender <- lm(
+  study_productivity ~ main_meals_per_day * gender,
+  data = group39_data_gender
+)
+
+summary(interaction_model_gender)
+```
+
+```{r}
+# Visualize the interaction: separate regression lines by gender
+ggplot(group39_data_gender, aes(x = main_meals_per_day, y = study_productivity, color = gender)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(
+    x = "Main meals per day",
+    y = "Study productivity (1-5)",
+    title = "Main meals per day → Study productivity by gender",
+    color = "Gender"
+  ) +
+  theme_minimal()
+```
+
+If the interaction term is significant, the relationship between meal frequency and productivity differs by gender, indicating gender as a moderator.
+
+#### Academic Program as a Moderator
+
+```{r}
+# Interaction model: main meals per day × academic program → study productivity
+interaction_model_program <- lm(
+  study_productivity ~ main_meals_per_day * academic_program,
+  data = group39_data
+)
+
+summary(interaction_model_program)
+```
+
+```{r}
+# Visualize the interaction: separate regression lines by program
+ggplot(group39_data, aes(x = main_meals_per_day, y = study_productivity, color = academic_program)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(
+    x = "Main meals per day",
+    y = "Study productivity (1-5)",
+    title = "Main meals per day → Study productivity by academic program",
+    color = "Academic Program"
+  ) +
+  theme_minimal()
+```
+
+#### Age as a Moderator
+
+```{r}
+# Interaction model: main meals per day × age → study productivity
+interaction_model_age <- lm(
+  study_productivity ~ main_meals_per_day * age,
+  data = group39_data
+)
+
+summary(interaction_model_age)
+```
+
+```{r}
+# Visualize the moderation: productivity by meals, colored by age group
+ggplot(group39_data, aes(x = main_meals_per_day, y = study_productivity, color = age)) +
+  geom_point(alpha = 0.3) +
+  facet_wrap(~ age) +
+  geom_smooth(method = "lm", se = TRUE, aes(fill = age), alpha = 0.2) +
+  labs(
+    x = "Main meals per day",
+    y = "Study productivity (1-5)",
+    title = "Main meals per day → Study productivity by age group"
+  ) +
+  theme_minimal()
+```
+
+### Mediation via Breakfast Frequency
+
+We test whether the relationship between breakfast frequency and study productivity is mediated by the number of main meals per day. The hypothesized pathway is:
+
+**breakfast_frequency → main_meals_per_day → study_productivity**
+
+```{r}
+# Step 1: Total effect (breakfast → productivity)
+model_total <- lm(
+  study_productivity ~ breakfast_score,
+  data = group39_data
+)
+
+# Step 2: Effect of breakfast on mediator (breakfast → meals)
+model_mediator <- lm(
+  main_meals_per_day ~ breakfast_score,
+  data = group39_data
+)
+
+# Step 3: Direct and indirect effects (breakfast + meals → productivity)
+model_full <- lm(
+  study_productivity ~ breakfast_score + main_meals_per_day,
+  data = group39_data
+)
+
+cat("Total effect (c):\n")
+print(coef(model_total)["breakfast_score"])
+
+cat("\nEffect on mediator (a):\n")
+print(coef(model_mediator)["breakfast_score"])
+
+cat("\nDirect effect (c'):\n")
+print(coef(model_full)["breakfast_score"])
+
+cat("\nMediator effect (b):\n")
+print(coef(model_full)["main_meals_per_day"])
+
+cat("\nIndirect effect (a × b):\n")
+a <- coef(model_mediator)["breakfast_score"]
+b <- coef(model_full)["main_meals_per_day"]
+indirect <- a * b
+print(indirect)
+
+cat("\nProportion of total effect mediated:\n")
+total_c <- coef(model_total)["breakfast_score"]
+prop_mediated <- indirect / total_c
+print(prop_mediated)
+```
+
+```{r}
+# Simple conceptual diagram
+dag_data <- tibble(
+  label = c("Breakfast\nFrequency", "Main Meals\nper Day", "Study\nProductivity"),
+  x = c(0, 1, 2),
+  y = c(0, 0.5, 0)
+)
+
+# Alternative: use a summary table of the pathways
+mediation_summary <- tibble(
+  Pathway = c(
+    "Total effect (c): breakfast → productivity",
+    "Path a: breakfast → main meals",
+    "Path b: main meals → productivity (controlling for breakfast)",
+    "Direct effect (c'): breakfast → productivity (controlling for meals)",
+    "Indirect effect (a × b): mediated through meals"
+  ),
+  Coefficient = c(
+    coef(model_total)["breakfast_score"],
+    coef(model_mediator)["breakfast_score"],
+    coef(model_full)["main_meals_per_day"],
+    coef(model_full)["breakfast_score"],
+    a * b
+  )
+)
+
+kable(
+  mediation_summary,
+  caption = "Mediation analysis: breakfast frequency → main meals → study productivity"
+)
+```
+
+If the indirect effect (a × b) is significant and substantially reduces the direct effect (c → c'), this indicates that main meals per day mediates the relationship between breakfast frequency and study productivity.
+
+### Subgroup Analysis: Descriptive Statistics by Demographics
+
+```{r}
+# Subgroup analysis: mean productivity by gender and meal consumption
+subgroup_gender <- group39_data %>%
+  filter(gender %in% c("Female", "Male")) %>%
+  group_by(gender) %>%
+  summarise(
+    n = n(),
+    mean_meals = round(mean(main_meals_per_day), 2),
+    mean_productivity = round(mean(study_productivity), 2),
+    .groups = "drop"
+  )
+
+kable(subgroup_gender, caption = "Mean main meals and study productivity by gender")
+```
+
+```{r}
+# Subgroup analysis: mean productivity by academic program
+subgroup_program <- group39_data %>%
+  group_by(academic_program) %>%
+  summarise(
+    n = n(),
+    mean_meals = round(mean(main_meals_per_day), 2),
+    mean_productivity = round(mean(study_productivity), 2),
+    .groups = "drop"
+  )
+
+kable(subgroup_program, caption = "Mean main meals and study productivity by academic program")
+```
+
+```{r}
+# Subgroup analysis: mean productivity by age group
+subgroup_age <- group39_data %>%
+  group_by(age) %>%
+  summarise(
+    n = n(),
+    mean_meals = round(mean(main_meals_per_day), 2),
+    mean_productivity = round(mean(study_productivity), 2),
+    .groups = "drop"
+  )
+
+kable(subgroup_age, caption = "Mean main meals and study productivity by age group")
+```
+
+### Interpretation
+
+The interaction models reveal whether demographic characteristics moderate the meal-productivity relationship. Significant interactions indicate that the strength or direction of the association differs across demographic groups. The mediation analysis explores whether the effect of breakfast frequency on productivity operates through an increase in main meals consumed. Subgroup descriptive statistics provide context for interpreting potential moderation effects.
 
 # Summary of Findings
 
