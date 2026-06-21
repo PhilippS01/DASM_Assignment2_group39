@@ -100,6 +100,18 @@ group39_data <- group39_data %>%
     breakfast_score = as.numeric(breakfast_frequency) - 1
   )
 
+# Prepare demographic variables for the additional exploratory analysis
+group39_data <- group39_data %>%
+  mutate(
+    age = factor(
+      age,
+      levels = c("18-20", "21-23", "23-25", "25-30", "30-35", "over 35"),
+      ordered = TRUE
+    ),
+    gender = factor(gender),
+    academic_program = factor(academic_program)
+  )
+
 # Show the first rows
 head(group39_data)
 ```
@@ -323,89 +335,94 @@ The Spearman correlation test shows a moderate positive correlation between brea
 
 Overall, Hypothesis 3 is supported by the data. Students who eat breakfast more frequently tend to report eating more main meals per day.
 
-# Explorative Analysis
+# Additional Exploratory Analysis
 
-## Mediator Hypotheses: Demographic Questions as Moderators and Mediators
+In addition to the main hypothesis tests, we explore whether demographic variables (age, gender, and academic program) provide additional context for the relationships between meal habits and perceived study productivity. These analyses are intended as additional exploratory context and we visually inspect whether the observed patterns appear to differ across demographic groups.
 
-We explore whether the demographic variables (age, gender, academic program) moderate or mediate the relationships between meal habits and study productivity. Specifically, we test whether the associations between breakfast frequency and productivity, and between main meals per day and productivity, differ across demographic groups.
-
-### Moderation by Demographics
-
-#### Gender as a Moderator
-
-We test whether the relationship between main meals per day and study productivity differs by gender using an interaction model.
+Before interpreting subgroup patterns, we first inspect the distribution of the demographic variables. This helps assess whether some groups are strongly underrepresented and should therefore be interpreted with caution.
 
 ```{r}
-# Prepare gender as a factor (excluding "Other" and "Prefer not to say" if present)
-group39_data_gender <- group39_data %>%
-  filter(gender %in% c("Female", "Male")) %>%
-  mutate(gender = factor(gender))
+demographic_counts <- bind_rows(
+  group39_data %>%
+    count(gender, name = "n") %>%
+    mutate(Variable = "Gender", Category = as.character(gender)) %>%
+    select(Variable, Category, n),
 
-# Interaction model: main meals per day × gender -> study productivity
-interaction_model_gender <- lm(
-  study_productivity ~ main_meals_per_day * gender,
-  data = group39_data_gender
+  group39_data %>%
+    count(age, name = "n") %>%
+    mutate(Variable = "Age", Category = as.character(age)) %>%
+    select(Variable, Category, n),
+
+  group39_data %>%
+    count(academic_program, name = "n") %>%
+    mutate(Variable = "Academic Program", Category = as.character(academic_program)) %>%
+    select(Variable, Category, n)
 )
 
-summary(interaction_model_gender)
+kable(
+  demographic_counts,
+  caption = "Distribution of demographic variables",
+  col.names = c("Variable", "Category", "n"),
+  booktabs = TRUE
+)
 ```
 
+The table shows that the sample is unevenly distributed across demographic groups. In particular, most participants are male, between 25 and 30 years old, and enrolled in Data Science. Therefore, the following subgroup analyses are interpreted cautiously and used only as additional exploratory context.
+
+## Demographic Differences in the Meal-Productivity Relationship
+
+As an additional exploratory analysis, we examine whether the relationship between main meals per day and perceived study productivity differs across demographic groups. This analysis is not part of the main hypothesis testing framework, but provides additional context for interpreting the main results.
+
+### Gender
+
+We first explore whether the association between main meals per day and perceived study productivity differs by gender. 
+
 ```{r}
-# Visualize the interaction: separate regression lines by gender
-ggplot(group39_data_gender, aes(x = main_meals_per_day, y = study_productivity, color = gender)) +
+group39_data <- group39_data %>%
+  filter(main_meals_per_day != 7)
+```
+
+We again exclude the person with seven meals per day from further analysis.
+
+```{r, fig.width=6, fig.height=3.5, out.width="80%", fig.align='center'}
+ggplot(group39_data, aes(x = main_meals_per_day, y = study_productivity, color = gender)) +
   geom_point(alpha = 0.4) +
   geom_smooth(method = "lm", se = TRUE) +
   labs(
     x = "Main meals per day",
     y = "Study productivity (1-5)",
-    title = "Main meals per day -> Study productivity by gender",
+    title = "Main meals per day and study productivity by gender",
     color = "Gender"
   ) +
   theme_minimal()
 ```
 
-If the interaction term is significant, the relationship between meal frequency and productivity differs by gender, indicating gender as a moderator.
+The plot suggests a possible gender difference in the relationship between main meals per day and perceived study productivity. While the trend appears slightly positive for male students, it appears slightly negative for female students. However, no strong conclusion should be drawn from this visual pattern alone.
 
-#### Academic Program as a Moderator
+### Academic Program
 
-```{r}
-# Interaction model: main meals per day × academic program -> study productivity
-interaction_model_program <- lm(
-  study_productivity ~ main_meals_per_day * academic_program,
-  data = group39_data
-)
+We also explore whether the association between main meals per day and perceived study productivity differs by academic program.
 
-summary(interaction_model_program)
-```
-
-```{r}
-# Visualize the interaction: separate regression lines by program
+```{r, fig.width=6, fig.height=3.5, out.width="80%", fig.align='center'}
 ggplot(group39_data, aes(x = main_meals_per_day, y = study_productivity, color = academic_program)) +
   geom_point(alpha = 0.4) +
   geom_smooth(method = "lm", se = TRUE) +
   labs(
     x = "Main meals per day",
     y = "Study productivity (1-5)",
-    title = "Main meals per day -> Study productivity by academic program",
+    title = "Main meals per day and study productivity by academic program",
     color = "Academic Program"
   ) +
   theme_minimal()
 ```
 
-#### Age as a Moderator
+For academic program, the regression lines are very similar and point in roughly the same direction. This suggests that academic program does not visibly change the relationship between main meals per day and perceived study productivity in a meaningful way. Therefore, this variable does not appear to add much explanatory value in the exploratory analysis.
 
-```{r}
-# Interaction model: main meals per day × age -> study productivity
-interaction_model_age <- lm(
-  study_productivity ~ main_meals_per_day * age,
-  data = group39_data
-)
+### Age
 
-summary(interaction_model_age)
-```
+Finally, we inspect perceived study productivity across age groups. Because some age groups contain only a small number of observations, this comparison should be interpreted cautiously.
 
-```{r}
-# Visualize the moderation: productivity by meals, colored by age group
+```{r, fig.width=6, fig.height=3.5, out.width="80%", fig.align='center'}
 ggplot(group39_data, aes(x = main_meals_per_day, y = study_productivity, color = age)) +
   geom_point(alpha = 0.3) +
   facet_wrap(~ age) +
@@ -413,143 +430,78 @@ ggplot(group39_data, aes(x = main_meals_per_day, y = study_productivity, color =
   labs(
     x = "Main meals per day",
     y = "Study productivity (1-5)",
-    title = "Main meals per day -> Study productivity by age group"
+    title = "Main meals per day and study productivity by age"
   ) +
   theme_minimal()
 ```
 
-### Mediation via Breakfast Frequency
+The plot shows some variation across age groups, with the relationship between main meals per day and perceived study productivity moving slightly up and down rather than following a clear overall trend. Because several age groups contain only few observations, these age-specific patterns should be interpreted cautiously and only as exploratory context.
 
-We test whether the relationship between breakfast frequency and study productivity is mediated by the number of main meals per day. The hypothesized pathway is:
+## Demographic Differences in the Breakfast-Productivity Relationship
 
-**breakfast_frequency -> main_meals_per_day -> study_productivity**
+As an additional exploratory analysis, we also shortly examine whether the relationship between breakfast frequency per week and perceived study productivity differs across demographic groups. For the breakfast-productivity relationship, we focus on gender and age, as these provide the most interpretable subgroup comparisons.
 
-```{r}
-# Step 1: Total effect (breakfast -> productivity)
-model_total <- lm(
-  study_productivity ~ breakfast_score,
-  data = group39_data
-)
+### Gender
 
-# Step 2: Effect of breakfast on mediator (breakfast -> meals)
-model_mediator <- lm(
-  main_meals_per_day ~ breakfast_score,
-  data = group39_data
-)
+We first explore whether the association between breakfast frequency and perceived study productivity differs by gender.
 
-# Step 3: Direct and indirect effects (breakfast + meals -> productivity)
-model_full <- lm(
-  study_productivity ~ breakfast_score + main_meals_per_day,
-  data = group39_data
-)
-
-cat("Total effect (c):\n")
-print(coef(model_total)["breakfast_score"])
-
-cat("\nEffect on mediator (a):\n")
-print(coef(model_mediator)["breakfast_score"])
-
-cat("\nDirect effect (c'):\n")
-print(coef(model_full)["breakfast_score"])
-
-cat("\nMediator effect (b):\n")
-print(coef(model_full)["main_meals_per_day"])
-
-cat("\nIndirect effect (a × b):\n")
-a <- coef(model_mediator)["breakfast_score"]
-b <- coef(model_full)["main_meals_per_day"]
-indirect <- a * b
-print(indirect)
-
-cat("\nProportion of total effect mediated:\n")
-total_c <- coef(model_total)["breakfast_score"]
-prop_mediated <- indirect / total_c
-print(prop_mediated)
+```{r, fig.width=6, fig.height=3.5, out.width="80%", fig.align='center'}
+ggplot(group39_data, aes(x = breakfast_frequency, y = study_productivity, fill = gender)) +
+  geom_boxplot(alpha = 0.7) +
+  facet_wrap(~ gender) +
+  labs(
+    x = "Breakfast frequency",
+    y = "Study productivity (1-5)",
+    title = "Breakfast frequency and study productivity by gender"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1),
+        legend.position = "none")
 ```
 
-```{r}
-# Simple conceptual diagram
-dag_data <- tibble(
-  label = c("Breakfast\nFrequency", "Main Meals\nper Day", "Study\nProductivity"),
-  x = c(0, 1, 2),
-  y = c(0, 0.5, 0)
-)
+The gender-specific plot does not suggest a strong difference between female and male students. Across breakfast frequency categories, the distribution of perceived study productivity appears broadly similar for both groups. Therefore, gender does not seem to meaningfully change the breakfast-productivity relationship in this sample.
 
-# Alternative: use a summary table of the pathways
-mediation_summary <- tibble(
-  Pathway = c(
-    "Total effect (c): breakfast -> productivity",
-    "Path a: breakfast -> main meals",
-    "Path b: main meals -> productivity (controlling for breakfast)",
-    "Direct effect (c'): breakfast -> productivity (controlling for meals)",
-    "Indirect effect (a × b): mediated through meals"
-  ),
-  Coefficient = c(
-    coef(model_total)["breakfast_score"],
-    coef(model_mediator)["breakfast_score"],
-    coef(model_full)["main_meals_per_day"],
-    coef(model_full)["breakfast_score"],
-    a * b
-  )
-)
+### Age
 
-kable(
-  mediation_summary,
-  caption = "Mediation analysis: breakfast frequency -> main meals -> study productivity"
-)
-```
+Finally, we inspect perceived study productivity across age groups. Because some age groups contain only a small number of observations, this comparison should be interpreted cautiously.
 
-If the indirect effect (a × b) is significant and substantially reduces the direct effect (c -> c'), this indicates that main meals per day mediates the relationship between breakfast frequency and study productivity.
-
-### Subgroup Analysis: Descriptive Statistics by Demographics
-
-```{r}
-# Subgroup analysis: mean productivity by gender and meal consumption
-subgroup_gender <- group39_data %>%
-  filter(gender %in% c("Female", "Male")) %>%
-  group_by(gender) %>%
+```{r, fig.width=6, fig.height=3.5, out.width="80%", fig.align='center'}
+breakfast_age_summary <- group39_data %>%
+  group_by(age, breakfast_frequency) %>%
   summarise(
+    mean_productivity = mean(study_productivity),
     n = n(),
-    mean_meals = round(mean(main_meals_per_day), 2),
-    mean_productivity = round(mean(study_productivity), 2),
     .groups = "drop"
   )
 
-kable(subgroup_gender, caption = "Mean main meals and study productivity by gender")
+ggplot(breakfast_age_summary, aes(
+  x = breakfast_frequency,
+  y = mean_productivity,
+  group = age,
+  color = age
+)) +
+  geom_point(size = 2) +
+  geom_line() +
+  labs(
+    x = "Breakfast frequency",
+    y = "Mean study productivity",
+    title = "Breakfast frequency and study productivity by age",
+    color = "Age group"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
-```{r}
-# Subgroup analysis: mean productivity by academic program
-subgroup_program <- group39_data %>%
-  group_by(academic_program) %>%
-  summarise(
-    n = n(),
-    mean_meals = round(mean(main_meals_per_day), 2),
-    mean_productivity = round(mean(study_productivity), 2),
-    .groups = "drop"
-  )
+The age-specific plot shows more variation across groups. Some age groups show slightly higher average productivity among students who eat breakfast every day, but the pattern is not fully consistent across all age categories. Age may be an interesting factor for further exploratory analysis, but some age-by-breakfast categories may contain very few observations, so individual mean values should not be overinterpreted.
 
-kable(subgroup_program, caption = "Mean main meals and study productivity by academic program")
-```
+# Summary of Findings and Conclusion
 
-```{r}
-# Subgroup analysis: mean productivity by age group
-subgroup_age <- group39_data %>%
-  group_by(age) %>%
-  summarise(
-    n = n(),
-    mean_meals = round(mean(main_meals_per_day), 2),
-    mean_productivity = round(mean(study_productivity), 2),
-    .groups = "drop"
-  )
+This report examined the relationship between meal habits and perceived study productivity among university students. The analysis focused on three research questions concerning breakfast frequency, the number of main meals per day, and perceived study productivity.
 
-kable(subgroup_age, caption = "Mean main meals and study productivity by age group")
-```
+For Hypothesis 1, the relationship between breakfast frequency and perceived study productivity was examined. [Insert H1 result here once the analysis is completed.]
 
-### Interpretation
+For Hypothesis 2, the results did not provide evidence for a statistically significant association between the number of main meals per day and perceived study productivity. Although the descriptive statistics showed a slight positive pattern, the Spearman correlation was very small and not statistically significant. Therefore, Hypothesis 2 was not supported by the data. For Hypothesis 3, the results showed a statistically significant moderate positive association between breakfast frequency and the number of main meals per day. Students who reported eating breakfast more frequently also tended to report eating more main meals per day. Therefore, Hypothesis 3 was supported by the data.
 
-The interaction models reveal whether demographic characteristics moderate the meal-productivity relationship. Significant interactions indicate that the strength or direction of the association differs across demographic groups. The mediation analysis explores whether the effect of breakfast frequency on productivity operates through an increase in main meals consumed. Subgroup descriptive statistics provide context for interpreting potential moderation effects.
+The additional exploratory analysis provided further demographic context. Some visual subgroup patterns appeared potentially interesting, for example differences by gender or age. However, these analyses were not part of the main hypothesis testing framework and should not be interpreted as evidence for additional hypotheses. Since some demographic subgroups were relatively small, these patterns should be considered exploratory only and could be investigated more systematically in future research.
 
-# Summary of Findings
-
-# Conclusion
+Overall, the findings suggest that breakfast frequency is clearly related to overall meal frequency, while the connection between meal habits and perceived study productivity is less clear. The results therefore indicate that eating patterns may be associated with each other, but they do not provide strong evidence that eating more main meals per day is linked to higher perceived study productivity in this sample.
