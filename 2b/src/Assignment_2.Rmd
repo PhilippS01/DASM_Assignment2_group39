@@ -435,11 +435,11 @@ ggplot(group39_data, aes(x = main_meals_per_day, y = study_productivity, color =
   theme_minimal()
 ```
 
-The plot shows some variation across age groups, with the relationship between main meals per day and perceived study productivity moving slightly up and down rather than following a clear overall trend. Because several age groups contain only few observations, these age-specific patterns should be interpreted cautiously and only as exploratory context.
+The plot shows some variation across age groups, with the relationship between main meals per day and perceived study productivity moving slightly up and down rather than following a clear overall trend. Because several age groups contain only a few observations, these age-specific patterns should be interpreted cautiously and only as exploratory context.
 
 ## Demographic Differences in the Breakfast-Productivity Relationship
 
-As an additional exploratory analysis, we also shortly examine whether the relationship between breakfast frequency per week and perceived study productivity differs across demographic groups. For the breakfast-productivity relationship, we focus on gender and age, as these provide the most interpretable subgroup comparisons.
+As an additional exploratory analysis, we also briefly examine whether the relationship between breakfast frequency per week and perceived study productivity differs across demographic groups. For the breakfast-productivity relationship, we focus on gender and age, as these provide the most interpretable subgroup comparisons.
 
 ### Gender
 
@@ -496,7 +496,7 @@ The age-specific plot shows more variation across groups. Some age groups show s
 
 # Summary of Findings and Conclusion
 
-This report examined the relationship between meal habits and perceived study productivity among university students. The analysis focused on three research questions concerning breakfast frequency, the number of main meals per day, and perceived study productivity.
+This report examined the relationship between meal habits and perceived study productivity among university students. The analysis focused on three research questions concerning breakfast frequency, the number of main meals per day, and perceived study productivity. The analysis uses read.csv() to import the data, mutate() to transform variables, factor() to define ordered categorical variables, ggplot() to create visualizations, group_by() and summarise() to compute descriptive statistics, kable() to display summary tables, and cor.test() to conduct Spearman correlation tests.
 
 For Hypothesis 1, the relationship between breakfast frequency and perceived study productivity was examined. [Insert H1 result here once the analysis is completed.]
 
