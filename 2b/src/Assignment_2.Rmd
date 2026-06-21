@@ -189,7 +189,7 @@ kable(
 )
 ```
 
-The descriptive statistics confirm the visual impression from the boxplot. The category of seven main meals per day contains only one observation. Since this value is far outside the range of the other reported meal counts and does not allow for a meaningful group-level comparison, it is treated as an outlier and excluded from the interpretation of the fourther analysis.
+The descriptive statistics confirm the visual impression from the boxplot. The category of seven main meals per day contains only one observation. Since the category of seven main meals per day contains only one observation and is far outside the range of the other reported meal counts, it was excluded from the inferential test of H2 to avoid giving a single case disproportionate influence. However, it is still shown in the descriptive table to transparently reflect the complete dataset.
 
 Focusing on students reporting one to four main meals per day, perceived study productivity is generally concentrated around values 3 and 4. Students reporting one or two main meals per day have a median productivity score of 3, while students reporting three or four main meals per day have a median productivity score of 4.
 
@@ -226,13 +226,13 @@ Overall, Hypothesis 2 is not supported by the data.
 
 **Hypothesis:** Students who eat breakfast more often also report eating more main meals per day.
 
+To test this hypothesis, we examine the relationship between two variables: `breakfast_frequency` and `main_meals_per_day`. The variable `breakfast_frequency` is an ordinal variable, as its response categories range from "Never" to "Every day" in a meaningful order. The variable `main_meals_per_day` is a discrete quantitative variable, as it represents the reported number of main meals students usually eat per day.
+
 ## Exploratory Data Analysis
 
-To explore the relationship between breakfast frequency and the number of main meals per day,
+To explore the relationship between breakfast frequency and the number of main meals per day, we calculated the average number of main meals per day for each breakfast frequency category using the `aggregate()` function. This allows us to observe the central tendency of meal consumption across different breakfast habits. A barplot was created to visualize this relationship, with breakfast frequency on the x-axis and average main meals per day on the y-axis. This visualization helps identify potential trends and patterns in the data.
 
-We calculated the average number of main meals per day for each breakfast frequency category using the `aggregate()` function. This allows us to observe the central tendency of meal consumption across different breakfast habits. A barplot was created to visualize this relationship, with breakfast frequency on the x-axis and average main meals per day on the y-axis. This visualization helps identify potential trends and patterns in the data.
-
-```{r}
+```{r, fig.width=6, fig.height=3.5, out.width="80%", fig.align='center'}
 # Calculate average main meals for each breakfast category
 h3_summary <- aggregate(
   main_meals_per_day ~ breakfast_frequency,
@@ -240,18 +240,12 @@ h3_summary <- aggregate(
   FUN = mean
 )
 
-# Show the summary table
-h3_summary
-```
-
-
-```{r}
 # Create barplot for Hypothesis 3
 ggplot(h3_summary, aes(x = breakfast_frequency, 
                        y = main_meals_per_day, fill = breakfast_frequency)) +
   geom_bar(stat = "identity", width = 0.5) +
   labs(
-    title = "H3: Main Meals per Day by Breakfast Frequency",
+    title = "Average Main Meals per Day by Breakfast Frequency",
     x = "Breakfast Frequency",
     y = "Average Main Meals per Day",
     fill = "Breakfast Frequency"
@@ -263,36 +257,44 @@ ggplot(h3_summary, aes(x = breakfast_frequency,
   scale_fill_brewer(palette = "Blues")
 ```
 
- The exploratory analysis reveals a positive trend between breakfast frequency and the number of main meals consumed per day. Students who never eat breakfast consume an average of approximately 1.9 main meals per day, while those who eat breakfast every day consume an average of approximately 2.8 main meals per day. The barplot shows a consistent upward pattern: as breakfast frequency increases from "Never" to "Every day," the average number of main meals per day steadily increases. This initial visual evidence supports our hypothesis that students who eat breakfast more frequently also tend to consume more main meals throughout the day.
+The exploratory analysis reveals a positive trend between breakfast frequency and the number of main meals consumed per day. Students who never eat breakfast appear to report the lowest average number of main meals per day, while students who eat breakfast every day appear to report the highest average number. The barplot shows a consistent upward pattern: as breakfast frequency increases from "Never" to "Every day", the average number of main meals per day also increases. This initial visual evidence is consistent with the hypothesis that students who eat breakfast more frequently also tend to consume more main meals throughout the day.
  
 ## Descriptive Inference
 
-To compute the descriptive statistics, we grouped the data by breakfast frequency and calculated the count, mean, median, standard deviation, minimum, and maximum for the number of main meals per day. This provides a comprehensive overview of the central tendency and dispersion of meal consumption across the different breakfast categories, allowing us to better understand the distribution of the data beyond just the averages.
+To compute the descriptive statistics, we grouped the data by breakfast frequency and calculated the count, mean, standard deviation, minimum, first quartile, median, third quartile, and maximum for the number of main meals per day. This provides an overview of both the central tendency and the dispersion of meal consumption across the different breakfast frequency categories.
 
-```{r h3-descriptive-inference}
+```{r}
 # Compute comprehensive summary statistics for main meals per day by breakfast frequency
 h3_descriptive <- group39_data %>%
   group_by(breakfast_frequency) %>%
   summarise(
-    Count = n(),
-    Mean = round(mean(main_meals_per_day, na.rm = TRUE), 2),
-    Median = median(main_meals_per_day, na.rm = TRUE),
-    SD = round(sd(main_meals_per_day, na.rm = TRUE), 2),
-    Min = min(main_meals_per_day, na.rm = TRUE),
-    Max = max(main_meals_per_day, na.rm = TRUE),
+    n = n(),
+    mean = round(mean(main_meals_per_day, na.rm = TRUE), 2),
+    sd = round(sd(main_meals_per_day, na.rm = TRUE), 2),
+    min = min(main_meals_per_day, na.rm = TRUE),
+    q25 = round(quantile(main_meals_per_day, 0.25, na.rm = TRUE), 2),
+    median = median(main_meals_per_day, na.rm = TRUE),
+    q75 = round(quantile(main_meals_per_day, 0.75, na.rm = TRUE), 2),
+    max = max(main_meals_per_day, na.rm = TRUE),
     .groups = "drop"
   )
 
 # Display the table
-kable(h3_descriptive, 
-      caption = "Table 1: Summary statistics of main meals per day by breakfast frequency",
-      align = c('l', 'c', 'c', 'c', 'c', 'c', 'c'))
+kable(
+  h3_descriptive,
+  caption = "Summary statistics of main meals per day by breakfast frequency",
+  col.names = c("Breakfast Frequency", "n", "Mean", "SD", "Min", "Q25", "Median", "Q75", "Max"),
+  booktabs = TRUE
+)
 ```
 
-The descriptive statistics reveal a clear positive trend between breakfast frequency and the number of main meals consumed per day. Students who never eat breakfast consume the fewest main meals on average, while those who eat breakfast every day consume the most. The median number of main meals increases progressively across breakfast frequency categories, indicating a shift in typical meal consumption patterns. The standard deviations show moderate variability within each group, with students who have moderate breakfast habits displaying slightly more diverse eating patterns. Overall, these descriptive statistics support H3, as the mean number of main meals consistently increases with breakfast frequency.
+The descriptive statistics confirm the visual impression from the barplot. Students who never eat breakfast report the lowest average number of main meals per day, while students who eat breakfast every day report the highest average number. The mean number of main meals increases consistently across the breakfast frequency categories, from 1.88 among students who never eat breakfast to 2.76 among students who eat breakfast every day.
+
+The median number of main meals is 2 in the lower breakfast-frequency categories and increases to 3 among students who eat breakfast five to six days per week or every day. Although there is some variability within the groups, especially in the “3–4 days per week” and “5–6 days per week” categories, the overall descriptive pattern suggests a positive association between breakfast frequency and the number of main meals per day. Therefore, the descriptive statistics are consistent with H3.
 
 ## Analytic Inference
-To test whether there is a statistically significant association between breakfast frequency and the number of main meals per day, we used **Spearman's rank correlation coefficient**. This non-parametric test is appropriate because breakfast frequency is an ordinal variable (ordered categories) and we want to assess whether there is a monotonic relationship between the two variables without assuming a normal distribution.
+
+To test whether there is a statistically significant association between breakfast frequency and the number of main meals per day, we used Spearman's rank correlation coefficient. This non-parametric test is appropriate because breakfast frequency is an ordinal variable with ordered response categories, and the aim is to assess whether there is a monotonic relationship between breakfast frequency and the number of main meals per day without assuming normally distributed variables.
 
 ```{r h3-analytic-inference}
 # Spearman correlation test
@@ -306,21 +308,20 @@ h3_correlation <- cor.test(
 # Display results 
 cat(
   "   SPEARMAN CORRELATION TEST RESULTS - H3\n",
-
   "Testing: Breakfast Frequency vs Main Meals per Day\n\n",
- 
   sprintf("Correlation coefficient (rho):  %.3f\n", h3_correlation$estimate),
   sprintf("p-value:                        %.4f\n", h3_correlation$p.value),
-  sprintf("Sample size (n):                %d\n", length(group39_data$breakfast_score)),
-  
+  sprintf(
+    "Sample size (n):                %d\n",
+    sum(complete.cases(group39_data$breakfast_score, group39_data$main_meals_per_day))
+  ),
   sep = ""
 )
 ```
-The Spearman correlation test reveals a correlation coefficient of "$\\rho$" = 0.425 with a p-value < 0.001. This indicates a moderate positive correlation between breakfast frequency and the number of main meals per day.
 
-The positive correlation coefficient indicates that as breakfast frequency increases, the number of main meals per day also tends to increase. The p-value is less than 0.001, which is well below the conventional significance level of 0.05, indicating that this relationship is highly statistically significant. This means the observed association is very unlikely to have occurred by chance.
+The Spearman correlation test shows a moderate positive correlation between breakfast frequency and the number of main meals per day, $\rho = 0.425$. The p-value is smaller than 0.001, which is below the conventional significance level of $\alpha = 0.05$. Therefore, we reject the null hypothesis of no association. This means that the data provide evidence for a statistically significant positive association between breakfast frequency and the number of main meals per day. As breakfast frequency increases, the number of main meals per day also tends to increase.
 
-Based on the Spearman correlation test, H3 is strongly supported. There is a statistically significant moderate positive correlation between breakfast frequency and the number of main meals per day. Students who eat breakfast more frequently tend to consume more main meals throughout the day, confirming our hypothesis that regular breakfast consumption is associated with higher overall meal frequency.
+Overall, Hypothesis 3 is supported by the data. Students who eat breakfast more frequently tend to report eating more main meals per day.
 
 # Explorative Analysis
 
