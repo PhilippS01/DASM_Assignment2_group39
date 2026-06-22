@@ -131,19 +131,116 @@ The dataset contains 209 observations and 7 variables after data preparation. No
 
 **Hypothesis:** Students who eat breakfast more often report higher perceived study productivity.
 
+To test this hypothesis, we look at the relationship between two variables: breakfast_frequency and study_productivity. The variable breakfast_frequency is an ordinal variable because it ranges from "Never" to "Every day". The variable study_productivity is also an ordinal variable measured on a 1-5 Likert scale, where higher values indicate higher perceived study productivity.
+
 ## Exploratory Data Analysis
 
-Choose appropriate methods to explore the categorical and quantitative features in your data set (one visualization per research question). Briefly explain the methods and comment on your findings.
+For the exploratory data analysis, we calculated the average perceived study productivity for each breakfast-frequency category and visualized it with a line chart. This visualization helps us identifying potential trends in study productivity across different breakfast habits.
+
+```{r}
+h1_summary <- group39_data %>%
+  group_by(breakfast_frequency) %>%
+  summarise(
+    mean_productivity = mean(study_productivity)
+  )
+
+ggplot(
+  h1_summary,
+  aes(
+    x = breakfast_frequency,
+    y = mean_productivity,
+    group = 1
+  )
+) +
+  geom_line(color = "forestgreen", linewidth = 1) +
+  geom_point(color = "forestgreen", size = 2) +
+  labs(
+    title = "Average Study Productivity by Breakfast Frequency",
+    x = "Breakfast Frequency",
+    y = "Average Productivity"
+  ) +
+  theme_minimal()
+```
+
+The line chart shows a slight positive trend between breakfast frequency and perceived study productivity. Students who eat breakfast more frequently tend to report higher average productivity scores. Although the differences are relatively small, the overall pattern is consistent with H1.
 
 ## Descriptive Inference
 
-Compute suitable summary statistics and display the results in a table.
+To further examine the pattern observed in the linechart, summary statistics were calculated for perceived study productivity grouped by breakfast frequency. This allows comparison of productivity scores across the different breakfast-frequency categories.
+
+```{r}
+h1_descriptive <- group39_data %>%
+  group_by(breakfast_frequency) %>%
+  summarise(
+    n = n(),
+    mean = round(mean(study_productivity, na.rm = TRUE), 2),
+    sd = round(sd(study_productivity, na.rm = TRUE), 2),
+    min = min(study_productivity, na.rm = TRUE),
+    q25 = round(quantile(study_productivity, 0.25, na.rm = TRUE), 2),
+    median = median(study_productivity, na.rm = TRUE),
+    q75 = round(quantile(study_productivity, 0.75, na.rm = TRUE), 2),
+    max = max(study_productivity, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+kable(
+  h1_descriptive,
+  caption = "Summary statistics of perceived study productivity by breakfast frequency",
+  col.names = c(
+    "Breakfast Frequency",
+    "n",
+    "Mean Productivity",
+    "SD",
+    "Min",
+    "Q25",
+    "Median",
+    "Q75",
+    "Max"
+  ),
+  booktabs = TRUE
+)
+```
+
+The descriptive statistics indicate a slight increase in perceived study productivity with higher breakfast frequency. Students who eat breakfast every day report the highest average productivity score (3.66), while those who eat breakfast one to two days per week report the lowest (3.29). Overall, the descriptive results are also consistent with H1.
 
 ## Analytic Inference
 
-Select an appropriate test statistic to test your hypothesis. Summarize the results and explain how your findings are connected to your research question.
+To formally test the hypothesis, we use Spearman's rank correlation coefficient ($\rho$) as the test statistic, because both variables are ordinal. Spearman's correlation evaluates monotonic relationships based on ranks and does not require normally distributed variables.
 
-to be added...
+```{r}
+h1_correlation <- cor.test(
+  group39_data$breakfast_score,
+  group39_data$study_productivity,
+  method = "spearman",
+  use = "complete.obs"
+)
+
+cat(
+  "   SPEARMAN CORRELATION TEST RESULTS - H1\n",
+  "Testing: Breakfast Frequency vs Study Productivity\n\n",
+  sprintf(
+    "Correlation coefficient (rho): %.3f\n",
+    h1_correlation$estimate
+  ),
+  sprintf(
+    "p-value: %.4f\n",
+    h1_correlation$p.value
+  ),
+  sprintf(
+    "Sample size (n): %d\n",
+    sum(
+      complete.cases(
+        group39_data$breakfast_score,
+        group39_data$study_productivity
+      )
+    )
+  ),
+  sep = ""
+)
+```
+The Spearman correlation test revealed a weak positive correlation between breakfast frequency and perceived study productivity ($\rho = 0.197$). The p-value was $p = 0.0042$, which is below the significance level of $\alpha = 0.05$. Therefore, the null hypothesis of no association can be rejected.
+
+Overall, the results suggest a statistically significant positive relationship between breakfast frequency and perceived study productivity. Therefore, Hypothesis 1 is supported by the data.
 
 \newpage
 
@@ -153,7 +250,7 @@ to be added...
 
 **Hypothesis:** Students who eat more main meals per day report higher perceived study productivity.
 
-To test this hypothesis, we examine the relationship between two variables: `main_meals_per_day` and `study_productivity`. The variable `main_meals_per_day` is a discrete quantitative variable, as it represents the reported number of main meals students usually eat per day. The variable `study_productivity` is an ordinal variable measured on a 1–5 Likert scale, where higher values indicate higher perceived study productivity.
+To test this hypothesis, we examine the relationship between two variables: `main_meals_per_day` and `study_productivity`. The variable `main_meals_per_day` is a discrete quantitative variable, as it represents the reported number of main meals students usually eat per day. The variable `study_productivity` is an ordinal variable measured on a 1-5 Likert scale, where higher values indicate higher perceived study productivity.
 
 ## Exploratory Data Analysis
 
@@ -209,7 +306,7 @@ The mean productivity scores show a slight increase from 3.47 for students repor
 
 ## Analytic Inference
 
-To formally test the hypothesis, we use Spearman's rank correlation coefficient ($r_s$) as the test statistic. This test is appropriate because perceived study productivity is measured on an ordinal 1–5 Likert scale, while the number of main meals per day is a discrete quantitative variable. Standard parametric correlation tests, such as Pearson's correlation, assume continuous variables, normally distributed data, and a linear relationship. These assumptions are not fully appropriate here because a productivity score of 2 and 3 is not necessarily the same distance apart as a productivity score of 4 and 5. Spearman's correlation is more suitable in this case because it is based on ranks and tests whether there is a monotonic relationship between the two variables.
+To formally test the hypothesis, we use Spearman's rank correlation coefficient ($r_s$) as the test statistic. This test is appropriate because perceived study productivity is measured on an ordinal 1-5 Likert scale, while the number of main meals per day is a discrete quantitative variable. Standard parametric correlation tests, such as Pearson's correlation, assume continuous variables, normally distributed data, and a linear relationship. These assumptions are not fully appropriate here because a productivity score of 2 and 3 is not necessarily the same distance apart as a productivity score of 4 and 5. Spearman's correlation is more suitable in this case because it is based on ranks and tests whether there is a monotonic relationship between the two variables.
 
 Since the category of seven main meals per day contains only one observation and was identified as an outlying category in the descriptive analysis, it is excluded from the inferential test.
 
@@ -302,7 +399,7 @@ kable(
 
 The descriptive statistics confirm the visual impression from the barplot. Students who never eat breakfast report the lowest average number of main meals per day, while students who eat breakfast every day report the highest average number. The mean number of main meals increases consistently across the breakfast frequency categories, from 1.88 among students who never eat breakfast to 2.76 among students who eat breakfast every day.
 
-The median number of main meals is 2 in the lower breakfast-frequency categories and increases to 3 among students who eat breakfast five to six days per week or every day. Although there is some variability within the groups, especially in the “3–4 days per week” and “5–6 days per week” categories, the overall descriptive pattern suggests a positive association between breakfast frequency and the number of main meals per day. Therefore, the descriptive statistics are consistent with H3.
+The median number of main meals is 2 in the lower breakfast-frequency categories and increases to 3 among students who eat breakfast five to six days per week or every day. Although there is some variability within the groups, especially in the “3-4 days per week” and “5-6 days per week” categories, the overall descriptive pattern suggests a positive association between breakfast frequency and the number of main meals per day. Therefore, the descriptive statistics are consistent with H3.
 
 ## Analytic Inference
 
@@ -498,9 +595,9 @@ The age-specific plot shows more variation across groups. Some age groups show s
 
 This report examined the relationship between meal habits and perceived study productivity among university students. The analysis focused on three research questions concerning breakfast frequency, the number of main meals per day, and perceived study productivity. The analysis uses read.csv() to import the data, mutate() to transform variables, factor() to define ordered categorical variables, ggplot() to create visualizations, group_by() and summarise() to compute descriptive statistics, kable() to display summary tables, and cor.test() to conduct Spearman correlation tests.
 
-For Hypothesis 1, the relationship between breakfast frequency and perceived study productivity was examined. [Insert H1 result here once the analysis is completed.]
-
-For Hypothesis 2, the results did not provide evidence for a statistically significant association between the number of main meals per day and perceived study productivity. Although the descriptive statistics showed a slight positive pattern, the Spearman correlation was very small and not statistically significant. Therefore, Hypothesis 2 was not supported by the data. For Hypothesis 3, the results showed a statistically significant moderate positive association between breakfast frequency and the number of main meals per day. Students who reported eating breakfast more frequently also tended to report eating more main meals per day. Therefore, Hypothesis 3 was supported by the data.
+For Hypothesis 1, the relationship between breakfast frequency and perceived study productivity was examined. The results showed a weak but statistically significant positive association between breakfast frequency and perceived study productivity. Students who reported eating breakfast more frequently tended to report slightly higher levels of perceived study productivity. Although the correlation was pretty small, the Spearman correlation test was statistically significant. Therefore, Hypothesis 1 was supported by the data.
+For Hypothesis 2, the results did not provide evidence for a statistically significant association between the number of main meals per day and perceived study productivity. Although the descriptive statistics showed a slight positive pattern, the Spearman correlation was very small and not statistically significant. Therefore, Hypothesis 2 was not supported by the data.
+For Hypothesis 3, the results showed a statistically significant moderate positive association between breakfast frequency and the number of main meals per day. Students who reported eating breakfast more frequently also tended to report eating more main meals per day. Therefore, Hypothesis 3 was supported by the data.
 
 The additional exploratory analysis provided further demographic context. Some visual subgroup patterns appeared potentially interesting, for example differences by gender or age. However, these analyses were not part of the main hypothesis testing framework and should not be interpreted as evidence for additional hypotheses. Since some demographic subgroups were relatively small, these patterns should be considered exploratory only and could be investigated more systematically in future research.
 
